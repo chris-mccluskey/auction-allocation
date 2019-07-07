@@ -12,7 +12,8 @@ class Allocation(models.Model):
     end_date = models.DateField(auto_now=False, auto_now_add=False)
 
     def __str__(self):
-        return self.title
+        return self.project_name
+
 
 class Bid(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -20,14 +21,16 @@ class Bid(models.Model):
     bid = models.PositiveIntegerField(unique=True)
     created = models.DateField(auto_now=False, auto_now_add=True)
 
-    def validate_bid(self, value):
-        for obj in Bid.objects.all():
-            if value < obj.bid:
-                raise serializers.ValidationError("Blog post is not about Django")
-        return value
-
     def __str__(self):
-        return self.title
+        return self.user.username
+
+    def __unicode__(self):
+        return self.bid
+
+    @property
+    def project_name(self):
+        return self.allocation.project_name
+
 
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -36,4 +39,4 @@ class Comment(models.Model):
     created = models.DateField(auto_now=False, auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return self.message

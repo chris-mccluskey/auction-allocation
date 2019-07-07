@@ -3,20 +3,32 @@ from rest_framework import serializers
 from api.models import Allocation, Bid, Comment
 
 class AllocationModelSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+
     class Meta:
         model = Allocation
-        user = serializers.HiddenField(default=serializers.CurrentUserDefault())
         fields = ('user', 'project_name', 'description', 'url', 'base_price', 'end_date')
 
 class BidModelSerializer(serializers.ModelSerializer):
+    # allocation = serializers.CharField(source='allocation.project_name', read_only=True)
+    # allocation = serializers.StringRelatedField()
+    project_name = serializers.ReadOnlyField()
+    user = serializers.ReadOnlyField(source='user.username')
+    # allocation = AllocationModelSerializer()
     class Meta:
         model = Bid
-        user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-        fields = ('allocation', 'bid')
+        fields = ('user', 'project_name', 'allocation', 'bid')
+
+    def validate(self, data):
+        for obj in  Bid.objects.filter(allocation__project_name__icontains=data['allocation']):
+            if data['bid'] < obj.bid:
+                raise serializers.ValidationError("This bid is less than the current bids!")
+        return data
 
 
 class CommentModelSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+
     class Meta:
         model = Comment
-        user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-        fields = ('auction', 'message')
+        fields = ('user', 'auction', 'message')
