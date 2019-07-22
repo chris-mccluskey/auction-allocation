@@ -30,14 +30,6 @@ class BidModelViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                       IsOwnerOrReadOnly,)
 
-    # def create(self, request):
-    #     serialized = self.serializer_class(data=request.data)
-    #     if serialized.is_valid():
-    #         serialized.save()
-    #         return Response(status=HTTP_202_ACCEPTED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
